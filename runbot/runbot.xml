@@ -56,7 +56,7 @@
         <field name="arch" type="xml">
             <form string="Branch" version="7.0">
                 <sheet>
-                    <group>
+                    <group string="Params">
                         <field name="repo_id"/>
                         <field name="name"/>
                         <field name="branch_name"/>

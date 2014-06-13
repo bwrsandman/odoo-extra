@@ -350,6 +350,14 @@ class runbot_branch(osv.osv):
                 r[branch.id] = "https://%s/tree/%s" % (branch.repo_id.base, branch.branch_name)
         return r
 
+    def name_get(self, cr, user, ids, context=None):
+        if isinstance(ids, (int, long)):
+            ids = [ids]
+        res = []
+        for branch in self.browse(cr, user, ids, context=context):
+            res.append((branch.id, "%s (%s)" % (branch.branch_name, branch.repo_id.name)))
+        return res
+
     _columns = {
         'repo_id': fields.many2one('runbot.repo', 'Repository', required=True, ondelete='cascade'),
         'name': fields.char('Ref Name', required=True),
@@ -457,6 +465,18 @@ class runbot_build(osv.osv):
 
         return port
 
+    def get_server_path(self, cr, uid, ids, *l, **kw):
+        for build in self.browse(cr, uid, ids, context=None):
+            # Server
+            server_path = build.path("openerp-server")
+            # for 7.0
+            if not os.path.isfile(server_path):
+                server_path = build.path("openerp-server.py")
+            # for 6.0 branches
+            if not os.path.isfile(server_path):
+                server_path = build.path("bin/openerp-server.py")
+            return server_path
+
     def path(self, cr, uid, ids, *l, **kw):
         for build in self.browse(cr, uid, ids, context=None):
             root = self.pool['runbot.repo'].root(cr, uid)
@@ -510,13 +530,7 @@ class runbot_build(osv.osv):
     def cmd(self, cr, uid, ids, context=None):
         for build in self.browse(cr, uid, ids, context=context):
             # Server
-            server_path = build.path("openerp-server")
-            # for 7.0
-            if not os.path.isfile(server_path):
-                server_path = build.path("openerp-server.py")
-            # for 6.0 branches
-            if not os.path.isfile(server_path):
-                server_path = build.path("bin/openerp-server.py")
+            server_path = build.get_server_path()
 
             # modules
             if build.repo_id.modules:
