@@ -373,6 +373,7 @@ class runbot_branch(osv.osv):
         'sticky': fields.boolean('Sticky'),
         'coverage': fields.boolean('Coverage'),
         'state': fields.char('Status'),
+        'builds': fields.one2many('runbot.build', 'branch_id', 'Builds'),
     }
 
 class runbot_build(osv.osv):
